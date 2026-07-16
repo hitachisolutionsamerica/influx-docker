@@ -14,15 +14,17 @@ else
     # ensure HOME is set to the telegraf user's home dir
     export HOME=$(getent passwd telegraf | cut -d : -f 6)
 
-    # honor groups supplied via 'docker run --group-add ...' but drop 'root'
-    # (also removes 'telegraf' since we unconditionally add it and don't want it listed twice)
+    # start from the telegraf user's own groups so memberships baked into
+    # /etc/group are kept (as su-exec's initgroups did), then honor groups
+    # supplied via 'docker run --group-add ...' but drop 'root' and anything
+    # already present
     # see https://github.com/influxdata/influxdata-docker/issues/724
-    groups="telegraf"
+    groups="$(id -Gn telegraf | tr ' ' ',')"
     extra_groups="$(id -Gn || true)"
     for group in $extra_groups; do
-        case "$group" in
-            root | telegraf) ;;
-            *) groups="$groups,$group" ;;
+        case ",${groups},root," in
+            *",${group},"*) ;;
+            *) groups="${groups},${group}" ;;
         esac
     done
     exec setpriv --reuid telegraf --regid telegraf --groups "$groups" "$@"
