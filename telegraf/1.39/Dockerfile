@@ -1,7 +1,7 @@
 FROM buildpack-deps:bookworm-curl
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends iputils-ping snmp procps lm-sensors libcap2-bin && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends iputils-ping snmp procps lm-sensors libcap2-bin tini && \
     rm -rf /var/lib/apt/lists/*
 
 RUN set -ex && \
@@ -31,5 +31,5 @@ RUN ARCH= && dpkgArch="$(dpkg --print-architecture)" && \
 EXPOSE 8125/udp 8092/udp 8094
 
 COPY entrypoint.sh /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/usr/bin/tini", "--", "/entrypoint.sh"]
 CMD ["telegraf"]
