@@ -39,5 +39,5 @@ RUN ARCH= && \
 EXPOSE 8125/udp 8092/udp 8094
 
 COPY entrypoint.sh /entrypoint.sh
-ENTRYPOINT ["/sbin/tini", "-g", "--", "/entrypoint.sh"]
+ENTRYPOINT ["/sbin/tini", "--", "/entrypoint.sh"]
 CMD ["telegraf"]
