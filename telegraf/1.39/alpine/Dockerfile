@@ -34,7 +34,10 @@ RUN ARCH= && \
     apk del .build-deps && \
     addgroup -S telegraf && \
     adduser -S telegraf -G telegraf && \
-    chown -R telegraf:telegraf /etc/telegraf
+    chown -R telegraf:telegraf /etc/telegraf && \
+    # drop root from the base image default supplementary groups (bin, disk,
+    # video, ...) so they are not granted to container processes at runtime
+    for g in $(id -Gn root); do [ "$g" = 'root' ] || delgroup root "$g"; done
 
 EXPOSE 8125/udp 8092/udp 8094
 
